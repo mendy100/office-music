@@ -515,7 +515,7 @@ try { $('who').value = localStorage.getItem('officeMusicName') || ''; } catch (e
 $('who').addEventListener('change', myName);
 
 (async () => {
-  const groups = await (await fetch('channels.json')).json();
+  const groups = await (await fetch('channels.json', { cache: 'no-cache' })).json();   // always check for the newest list
   const tabs = $('tabs'), root = $('channels');
   const addTab = (key, label) => {
     const t = document.createElement('button'); t.className = 'tab' + (key === tab ? ' on' : ''); t.textContent = label;
