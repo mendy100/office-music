@@ -253,10 +253,17 @@ function hookSession() {
 
 function makeStatus() {
   if (!player || !player.isConnected) return { app: null, url: null, by: null, volume: 0, connected: false };
-  const em = player.isMediaLoaded ? null : existingMedia();
-  let loaded = player.isMediaLoaded || !!em;
-  const mi = player.mediaInfo || (em && em.media);
+  // 1) the media this Chrome is attached to right now (updates immediately after switching channels)
+  const sess = liveSession();
+  const ms = sess && sess.getMediaSession ? sess.getMediaSession() : null;
+  const msLive = ms && ms.media && ms.playerState && ms.playerState !== chrome.cast.media.PlayerState.IDLE;
+  // 2) otherwise what RemotePlayer / the raw session know
+  const em = msLive || player.isMediaLoaded ? null : existingMedia();
+  let loaded = !!msLive || player.isMediaLoaded || !!em;
+  const mi = msLive ? ms.media : (player.mediaInfo || (em && em.media));
   let url = loaded && mi ? mi.contentId : null;
+  // 3) right after a click, trust the channel we just asked for until the speaker confirms
+  if (justPlayed && Date.now() - justPlayed.at < 8000 && url !== justPlayed.url) { url = justPlayed.url; loaded = true; }
   // Started from another PC: the speaker still announces "Casting: <name>"; match it to a channel.
   if (!url) {
     const s = ctx.getCurrentSession();
@@ -273,7 +280,8 @@ function makeStatus() {
     connected: true,
     app: loaded ? 'playing' : null,
     url,
-    by: mi && mi.customData ? mi.customData.by || null : null,
+    by: mi && mi.contentId === url && mi.customData ? mi.customData.by || null
+        : (justPlayed && justPlayed.url === url ? justPlayed.by : null),
     volume: Math.round((player.volumeLevel || 0) * 100),
     device: ctx.getCurrentSession() ? ctx.getCurrentSession().getCastDevice().friendlyName : null,
   };
@@ -303,6 +311,7 @@ window.__onGCastApiAvailable = ok => {
 };
 
 let stoppedText = null;      // speaker status text at the moment we pressed Stop
+let justPlayed = null;       // { url, by, at } of the channel this person just clicked
 let volLockUntil = 0;        // after a volume change, trust our slider for a moment
 
 function liveSession() {
@@ -396,6 +405,9 @@ async function play(card) {
     req.autoplay = true;
     await session.loadMedia(req);
     stoppedText = null;
+    justPlayed = { url: c.url, by: mi.customData.by, at: Date.now() };
+    const ms = session.getMediaSession && session.getMediaSession();
+    if (ms) ms.addUpdateListener(() => render(makeStatus()));
     toast('שפילט: ' + c.name);
   } catch (e) {
     if (e !== 'cancel' && !(e && e.code === 'cancel')) toast('האט נישט געקענט שפילן: ' + (e && (e.description || e.code) || e));
@@ -540,7 +552,11 @@ $('stop').onclick = () => {
   const s = liveSession();
   if (!s) return;
   stoppedText = s.getApplicationStatus ? s.getApplicationStatus() : null;
-  if (player.isMediaLoaded) {
+  justPlayed = null;
+  const ms = s.getMediaSession && s.getMediaSession();
+  if (ms && ms.media) {
+    ms.stop(null, () => render(makeStatus()), () => {});   // stop the music but stay connected
+  } else if (player.isMediaLoaded) {
     controller.stop();          // stop the music but stay connected, so the next click plays right away
   } else {
     s.endSession(true);         // music started elsewhere: close the player on the speaker
