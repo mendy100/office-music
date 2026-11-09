@@ -46,11 +46,11 @@
     box-shadow: 0 1px 2px rgba(0,0,0,.06); transition: transform .15s, box-shadow .15s; }
   .pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .pic .fallback { position: absolute; inset: 0; display: grid; place-items: center; padding: 14px; text-align: center;
-    font-weight: 800; font-size: clamp(20px, 2.4vw, 30px); line-height: 1.1; color: #fff;
+    font-weight: 800; font-size: clamp(18px, 2vw, 26px); line-height: 1.15; color: #fff;
     text-shadow: 0 2px 8px rgba(0,0,0,.35); background: var(--g); }
   .pic .fallback::before { content: ""; position: absolute; width: 70%; aspect-ratio: 1; border-radius: 50%;
     top: 14%; left: 15%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.35), rgba(255,255,255,.05) 60%, transparent 70%); }
-  .pic .fallback span { position: relative; }
+  .pic .fallback span { position: relative; overflow-wrap: anywhere; max-width: 100%; }
   .pic .mark { position: absolute; top: 8px; left: 10px; font-weight: 800; font-style: italic; font-size: 15px;
     color: rgba(255,255,255,.85); }
   .card:hover .pic { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.14); }
@@ -163,13 +163,40 @@ function myName() {
   return v || null;
 }
 
+// Music started by someone else (another PC) may not be in RemotePlayer yet; look at the raw session too.
+function existingMedia() {
+  const s = ctx && ctx.getCurrentSession();
+  const so = s && s.getSessionObj();
+  const m = so && so.media && so.media[0];
+  return m && m.playerState && m.playerState !== chrome.cast.media.PlayerState.IDLE ? m : null;
+}
+
+function hookSession() {
+  const s = ctx.getCurrentSession(); if (!s) return;
+  const so = s.getSessionObj();
+  if (!so._officeHooked) {
+    so._officeHooked = true;
+    so.addMediaListener(m => {
+      m.addUpdateListener(() => render(makeStatus()));
+      render(makeStatus());
+    });
+  }
+  (so.media || []).forEach(m => {
+    m.addUpdateListener(() => render(makeStatus()));
+    m.getStatus(null, () => render(makeStatus()), () => {});
+  });
+  render(makeStatus());
+}
+
 function makeStatus() {
   if (!player || !player.isConnected) return { app: null, url: null, by: null, volume: 0, connected: false };
-  const mi = player.mediaInfo;
+  const em = player.isMediaLoaded ? null : existingMedia();
+  const loaded = player.isMediaLoaded || !!em;
+  const mi = player.mediaInfo || (em && em.media);
   return {
     connected: true,
-    app: player.isMediaLoaded ? 'playing' : null,
-    url: player.isMediaLoaded && mi ? mi.contentId : null,
+    app: loaded ? 'playing' : null,
+    url: loaded && mi ? mi.contentId : null,
     by: mi && mi.customData ? mi.customData.by || null : null,
     volume: Math.round((player.volumeLevel || 0) * 100),
     device: ctx.getCurrentSession() ? ctx.getCurrentSession().getCastDevice().friendlyName : null,
@@ -185,6 +212,12 @@ function initCast() {
   player = new cast.framework.RemotePlayer();
   controller = new cast.framework.RemotePlayerController(player);
   controller.addEventListener(cast.framework.RemotePlayerEventType.ANY_CHANGE, () => render(makeStatus()));
+  ctx.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, e => {
+    const S = cast.framework.SessionState;
+    if (e.sessionState === S.SESSION_STARTED || e.sessionState === S.SESSION_RESUMED) setTimeout(hookSession, 300);
+    render(makeStatus());
+  });
+  if (ctx.getCurrentSession()) hookSession();
   render(makeStatus());
 }
 
