@@ -238,6 +238,7 @@ function hookSession() {
   const so = s.getSessionObj();
   if (!so._officeHooked) {
     so._officeHooked = true;
+    s.addEventListener(cast.framework.SessionEventType.APPLICATION_STATUS_CHANGED, () => render(makeStatus()));
     so.addMediaListener(m => {
       m.addUpdateListener(() => render(makeStatus()));
       render(makeStatus());
@@ -253,12 +254,25 @@ function hookSession() {
 function makeStatus() {
   if (!player || !player.isConnected) return { app: null, url: null, by: null, volume: 0, connected: false };
   const em = player.isMediaLoaded ? null : existingMedia();
-  const loaded = player.isMediaLoaded || !!em;
+  let loaded = player.isMediaLoaded || !!em;
   const mi = player.mediaInfo || (em && em.media);
+  let url = loaded && mi ? mi.contentId : null;
+  // Started from another PC: the speaker still announces "Casting: <name>"; match it to a channel.
+  if (!url) {
+    const s = ctx.getCurrentSession();
+    const st = s && s.getApplicationStatus ? s.getApplicationStatus() : '';
+    const m = /^Casting:\s*(.+)$/.exec(st || '');
+    if (m) {
+      const name = m[1].trim();
+      const ch = Object.values(byUrl).find(c => c.name === name);
+      url = ch ? ch.url : null;
+      loaded = true;
+    }
+  }
   return {
     connected: true,
     app: loaded ? 'playing' : null,
-    url: loaded && mi ? mi.contentId : null,
+    url,
     by: mi && mi.customData ? mi.customData.by || null : null,
     volume: Math.round((player.volumeLevel || 0) * 100),
     device: ctx.getCurrentSession() ? ctx.getCurrentSession().getCastDevice().friendlyName : null,
@@ -345,7 +359,7 @@ function render(s) {
   $('dot').classList.toggle('on', !!s.connected);
   paintBar();
   if (changed) refreshSong();
-  $('stop').disabled = !s.app;
+  $('stop').disabled = !s.connected;   // once connected, Stop always works
   $('vol').disabled = $('down').disabled = $('up').disabled = !s.connected;
   if (!dragging) $('vol').value = s.volume;
   $('voln').textContent = s.volume;
