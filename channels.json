@@ -4,79 +4,98 @@
   "channels": [
    {
     "name": "אלגעמיינע קאלעקשאן",
-    "url": "https://music.y24.app/1"
+    "url": "https://music.y24.app/1",
+    "image": "icons/18.png"
    },
    {
     "name": "לעבעדיג",
-    "url": "https://music2.y24.app/37"
+    "url": "https://music2.y24.app/37",
+    "image": "icons/106345.png"
    },
    {
     "name": "לעבעדיג 2",
-    "url": "https://music.y24.app/1055"
+    "url": "https://music.y24.app/1055",
+    "image": "icons/145451.png"
    },
    {
     "name": "אידישע ניגונים",
-    "url": "https://music.y24.app/7"
+    "url": "https://music.y24.app/7",
+    "image": "icons/51047.png"
    },
    {
     "name": "קומזיץ",
-    "url": "https://music.y24.app/9"
+    "url": "https://music.y24.app/9",
+    "image": "icons/51049.png"
    },
    {
     "name": "רואיגע/שטייטע מוזיק",
-    "url": "https://music.y24.app/11"
+    "url": "https://music.y24.app/11",
+    "image": "icons/52364.png"
    },
    {
     "name": "ווארעם",
-    "url": "https://music.y24.app/1056"
+    "url": "https://music.y24.app/1056",
+    "image": "icons/145450.png"
    },
    {
     "name": "חתונה פרייליך",
-    "url": "https://music.y24.app/8"
+    "url": "https://music.y24.app/8",
+    "image": "icons/51048.png"
    },
    {
     "name": "חתונה צווייטע טאנץ",
-    "url": "https://music.y24.app/10"
+    "url": "https://music.y24.app/10",
+    "image": "icons/51050.png"
    },
    {
     "name": "טאנץ",
-    "url": "https://music2.y24.app/55"
+    "url": "https://music2.y24.app/55",
+    "image": "icons/131390.png"
    },
    {
     "name": "מארש",
-    "url": "https://music2.y24.app/54"
+    "url": "https://music2.y24.app/54",
+    "image": "icons/131391.png"
    },
    {
     "name": "מארש וואלס",
-    "url": "https://music.y24.app/1057"
+    "url": "https://music.y24.app/1057",
+    "image": "icons/145449.png"
    },
    {
     "name": "לחיים",
-    "url": "https://music2.y24.app/27"
+    "url": "https://music2.y24.app/27",
+    "image": "icons/69143.png"
    },
    {
     "name": "נגינה אן מוזיק",
-    "url": "https://music.y24.app/3"
+    "url": "https://music.y24.app/3",
+    "image": "icons/50133.png"
    },
    {
     "name": "וואקאליש",
-    "url": "https://music.y24.app/1058"
+    "url": "https://music.y24.app/1058",
+    "image": "icons/154269.png"
    },
    {
     "name": "פיאנע",
-    "url": "https://music2.y24.app/38"
+    "url": "https://music2.y24.app/38",
+    "image": "icons/106346.png"
    },
    {
     "name": "מעדיטעשאן",
-    "url": "https://music2.y24.app/39"
+    "url": "https://music2.y24.app/39",
+    "image": "icons/106347.png"
    },
    {
     "name": "חזנות",
-    "url": "https://music.y24.app/5"
+    "url": "https://music.y24.app/5",
+    "image": "icons/51055.png"
    },
    {
     "name": "קינדער קווייער",
-    "url": "https://music.y24.app/26"
+    "url": "https://music.y24.app/26",
+    "image": "icons/69142.png"
    }
   ]
  },
@@ -85,39 +104,48 @@
   "channels": [
    {
     "name": "שבת",
-    "url": "https://music.y24.app/2"
+    "url": "https://music.y24.app/2",
+    "image": "icons/50132.png"
    },
    {
     "name": "מוצאי שבת",
-    "url": "https://music.y24.app/6"
+    "url": "https://music.y24.app/6",
+    "image": "icons/51046.png"
    },
    {
     "name": "ימים נוראים",
-    "url": "https://music.y24.app/16"
+    "url": "https://music.y24.app/16",
+    "image": "icons/69611.png"
    },
    {
     "name": "סוכות",
-    "url": "https://music.y24.app/17"
+    "url": "https://music.y24.app/17",
+    "image": "icons/69147.png"
    },
    {
     "name": "חנוכה",
-    "url": "https://music.y24.app/4"
+    "url": "https://music.y24.app/4",
+    "image": "icons/50554.png"
    },
    {
     "name": "פורים",
-    "url": "https://music.y24.app/12"
+    "url": "https://music.y24.app/12",
+    "image": "icons/55202.png"
    },
    {
     "name": "פסח",
-    "url": "https://music.y24.app/13"
+    "url": "https://music.y24.app/13",
+    "image": "icons/59933.png"
    },
    {
     "name": "ל״ג בעומר",
-    "url": "https://music.y24.app/14"
+    "url": "https://music.y24.app/14",
+    "image": "icons/69724.png"
    },
    {
     "name": "שבועות",
-    "url": "https://music.y24.app/19"
+    "url": "https://music.y24.app/19",
+    "image": "icons/69135.png"
    }
   ]
  },
@@ -126,31 +154,38 @@
   "channels": [
    {
     "name": "באבוב",
-    "url": "https://music2.y24.app/31"
+    "url": "https://music2.y24.app/31",
+    "image": "icons/69612.png"
    },
    {
     "name": "בעלזא",
-    "url": "https://music2.y24.app/28"
+    "url": "https://music2.y24.app/28",
+    "image": "icons/69144.png"
    },
    {
     "name": "וויזניץ",
-    "url": "https://music2.y24.app/29"
+    "url": "https://music2.y24.app/29",
+    "image": "icons/69145.png"
    },
    {
     "name": "חב״ד",
-    "url": "https://music2.y24.app/40"
+    "url": "https://music2.y24.app/40",
+    "image": "icons/106348.png"
    },
    {
     "name": "מאדזיץ",
-    "url": "https://music2.y24.app/33"
+    "url": "https://music2.y24.app/33",
+    "image": "icons/69614.png"
    },
    {
     "name": "סאטמאר",
-    "url": "https://music2.y24.app/35"
+    "url": "https://music2.y24.app/35",
+    "image": "icons/69616.png"
    },
    {
     "name": "סקולען",
-    "url": "https://music2.y24.app/30"
+    "url": "https://music2.y24.app/30",
+    "image": "icons/69146.png"
    }
   ]
  },
@@ -159,103 +194,128 @@
   "channels": [
    {
     "name": "אביש בראדט",
-    "url": "https://music2.y24.app/41"
+    "url": "https://music2.y24.app/41",
+    "image": "icons/106349.png"
    },
    {
     "name": "אברהם פריעד",
-    "url": "https://music.y24.app/21"
+    "url": "https://music.y24.app/21",
+    "image": "icons/69137.png"
    },
    {
     "name": "אהר'לה סאמעט",
-    "url": "https://music2.y24.app/47"
+    "url": "https://music2.y24.app/47",
+    "image": "icons/109309.png"
    },
    {
     "name": "אייזיק האניג",
-    "url": "https://music.y24.app/25"
+    "url": "https://music.y24.app/25",
+    "image": "icons/69141.png"
    },
    {
     "name": "בנציון שענקער",
-    "url": "https://music2.y24.app/32"
+    "url": "https://music2.y24.app/32",
+    "image": "icons/69613.png"
    },
    {
     "name": "בערי וועבער",
-    "url": "https://music2.y24.app/42"
+    "url": "https://music2.y24.app/42",
+    "image": "icons/106350.png"
    },
    {
     "name": "ברוך לוין",
-    "url": "https://music2.y24.app/43"
+    "url": "https://music2.y24.app/43",
+    "image": "icons/106351.png"
    },
    {
     "name": "דודי קאליש",
-    "url": "https://music2.y24.app/48"
+    "url": "https://music2.y24.app/48",
+    "image": "icons/109308.png"
    },
    {
     "name": "זאנוויל וויינברגר",
-    "url": "https://music2.y24.app/53"
+    "url": "https://music2.y24.app/53",
+    "image": "icons/109307.png"
    },
    {
     "name": "יהודה גרין",
-    "url": "https://music2.y24.app/49"
+    "url": "https://music2.y24.app/49",
+    "image": "icons/109306.png"
    },
    {
     "name": "יואלי קליין",
-    "url": "https://music2.y24.app/56"
+    "url": "https://music2.y24.app/56",
+    "image": "icons/134848.png"
    },
    {
     "name": "יעקב דאסקאל",
-    "url": "https://music2.y24.app/50"
+    "url": "https://music2.y24.app/50",
+    "image": "icons/109305.png"
    },
    {
     "name": "יעקב שוואקי",
-    "url": "https://music.y24.app/1054"
+    "url": "https://music.y24.app/1054",
+    "image": "icons/145448.png"
    },
    {
     "name": "ישראל ווערדיגער",
-    "url": "https://music2.y24.app/44"
+    "url": "https://music2.y24.app/44",
+    "image": "icons/106352.png"
    },
    {
     "name": "לוי פאלקאוויטש",
-    "url": "https://music2.y24.app/57"
+    "url": "https://music2.y24.app/57",
+    "image": "icons/143303.png"
    },
    {
     "name": "ליפא שמעלצער",
-    "url": "https://music.y24.app/22"
+    "url": "https://music.y24.app/22",
+    "image": "icons/69138.png"
    },
    {
     "name": "מאטי אילאוויטש",
-    "url": "https://music2.y24.app/34"
+    "url": "https://music2.y24.app/34",
+    "image": "icons/69615.png"
    },
    {
     "name": "מוטי שטיינמץ",
-    "url": "https://music2.y24.app/51"
+    "url": "https://music2.y24.app/51",
+    "image": "icons/109304.png"
    },
    {
     "name": "מיכאל שניצלער",
-    "url": "https://music.y24.app/23"
+    "url": "https://music.y24.app/23",
+    "image": "icons/69139.png"
    },
    {
     "name": "מרדכי בן דוד",
-    "url": "https://music.y24.app/20"
+    "url": "https://music.y24.app/20",
+    "image": "icons/69136.png"
    },
    {
     "name": "משה גאלדמאן",
-    "url": "https://music.y24.app/24"
+    "url": "https://music.y24.app/24",
+    "image": "icons/69140.png"
    },
    {
     "name": "שלומי גרטנר",
-    "url": "https://music2.y24.app/45"
+    "url": "https://music2.y24.app/45",
+    "image": "icons/106353.png"
    },
    {
     "name": "שלומי דאסקאל",
-    "url": "https://music2.y24.app/52"
+    "url": "https://music2.y24.app/52",
+    "image": "icons/109302.png"
    },
    {
     "name": "שמחה ליינר",
-    "url": "https://music2.y24.app/46"
+    "url": "https://music2.y24.app/46",
+    "image": "icons/106354.png"
    },
    {
     "name": "שמילי אונגר",
-    "url": "https://music2.y24.app/58"
+    "url": "https://music2.y24.app/58",
+    "image": "icons/154270.png"
    }
   ]
  }

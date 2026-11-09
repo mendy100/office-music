@@ -58,15 +58,23 @@
     background: #fff; color: #2b2d33; display: grid; place-items: center; opacity: 0;
     transform: translate(-50%, -50%) scale(.8); transition: opacity .2s, transform .2s;
     box-shadow: 0 0 0 10px rgba(255,255,255,.35), 0 4px 18px rgba(0,0,0,.25); z-index: 2; }
-  .play svg { width: 24px; height: 24px; margin-left: 4px; }
+  .play svg { width: 24px; height: 24px; }
+  .play .ic-play { margin-left: 4px; }
   .pic img, .pic .fallback { transition: filter .25s, transform .25s; }
   .card:hover .pic img, .card:hover .pic .fallback { filter: blur(7px) brightness(.85); transform: scale(1.06); }
   .card:hover .play { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  .card.on .pic { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .card.on .pic img, .card.on .pic .fallback { filter: blur(7px) brightness(.85); transform: scale(1.06); }
+  .card.on .play { opacity: 1; transform: translate(-50%, -50%) scale(1); animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 7px rgba(255,255,255,.40), 0 4px 18px rgba(0,0,0,.25); }
+    50%      { box-shadow: 0 0 0 14px rgba(255,255,255,.18), 0 4px 18px rgba(0,0,0,.25); }
+  }
+  .play .ic-pause, .card.on .play .ic-play { display: none; }
+  .card.on .play .ic-pause { display: block; }
   .card.on:hover .play { opacity: 1; }
   .live { position: absolute; top: 8px; right: 8px; background: var(--stop); color: #fff; font-size: 12px; font-weight: 700;
     padding: 2px 8px; border-radius: 4px; display: none; }
-  .card.on .live { display: block; }
+  .card.on .live { display: none; }
   .card.busy .pic { opacity: .55; }
   .name { font-weight: 700; margin-top: 8px; font-size: 15px; }
   .sub { color: var(--muted); font-size: 13px; }
@@ -98,6 +106,31 @@
     .grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
   }
 
+  /* my own streams */
+  .addcard .pic { border: 2px dashed var(--line); background: var(--soft); display: grid; place-items: center;
+    color: var(--blue); font-size: 54px; font-weight: 300; box-shadow: none; }
+  .addcard:hover .pic { border-color: var(--blue); }
+  .del { position: absolute; top: 6px; left: 6px; width: 26px; height: 26px; border-radius: 50%; border: 0;
+    background: rgba(0,0,0,.55); color: #fff; font-size: 16px; line-height: 1; cursor: pointer; z-index: 3;
+    display: none; place-items: center; }
+  .card:hover .del { display: grid; }
+  dialog { border: 0; border-radius: 12px; padding: 0; width: min(420px, calc(100% - 32px));
+    background: var(--bg); color: var(--ink); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+  dialog::backdrop { background: rgba(0,0,0,.45); }
+  dialog form { padding: 20px; display: grid; gap: 12px; }
+  dialog h3 { margin: 0 0 4px; font-size: 18px; }
+  dialog label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+  dialog input[type=text], dialog input[type=url] { padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--soft); color: var(--ink); font: inherit; }
+  dialog input[type=url] { direction: ltr; text-align: left; }
+  .iconrow { display: flex; align-items: center; gap: 12px; }
+  .iconprev { width: 70px; aspect-ratio: 227 / 266; border-radius: 6px; background: var(--soft) center / cover no-repeat;
+    border: 1px solid var(--line); flex: none; }
+  .actions { display: flex; gap: 8px; justify-content: flex-start; margin-top: 4px; }
+  .actions button { border: 0; border-radius: 6px; padding: 9px 16px; font: inherit; font-weight: 600; cursor: pointer; }
+  .actions .ok { background: var(--blue); color: #fff; }
+  .actions .cancel { background: var(--soft); color: var(--ink); }
+  .hint { font-size: 12px; color: var(--muted); }
   .who { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
   .who input { width: 110px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
     background: var(--soft); color: var(--ink); font: inherit; }
@@ -149,11 +182,36 @@
 </div>
 <div class="toast" id="toast"></div>
 
+<dialog id="adddlg">
+  <form id="addform">
+    <h3>צולייגן א לייוו סטרים</h3>
+    <label>נאמען
+      <input type="text" id="addname" required maxlength="60" placeholder="למשל: מיין ראדיא">
+    </label>
+    <label>לינק פון דעם לייוו סטרים
+      <input type="url" id="addurl" required placeholder="https://...">
+    </label>
+    <div class="hint">א דירעקטער אודיא לינק (mp3 / aac / m3u8), נישט א וועבזייטל.</div>
+    <div class="iconrow">
+      <div class="iconprev" id="addprev"></div>
+      <label>בילד (אויפלאדן)
+        <input type="file" id="addicon" accept="image/*">
+      </label>
+    </div>
+    <div class="actions">
+      <button class="ok" type="submit" id="addok">צולייגן</button>
+      <button class="cancel" type="button" id="addcancel">אנולירן</button>
+    </div>
+    <div class="hint">ווערט געהאלטן נאר אין דיין Chrome.</div>
+  </form>
+</dialog>
+
 <script>
 const $ = id => document.getElementById(id);
 const byUrl = {};
 let current = null, dragging = false, volTimer = null, tab = 'all';
-const PLAY_ICON = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z" fill="currentColor"/></svg>';
+const PLAY_ICON = '<svg class="ic-play" viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z" fill="currentColor"/></svg>'
+                + '<svg class="ic-pause" viewBox="0 0 16 16"><rect x="3.5" y="2.5" width="3" height="11" rx="1" fill="currentColor"/><rect x="9.5" y="2.5" width="3" height="11" rx="1" fill="currentColor"/></svg>';
 
 function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show');
   clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2600); }
@@ -246,7 +304,7 @@ async function refreshSong() {
   try {
     const r = await fetch('https://music.y24.app/playing.txt', { cache: 'no-store' });
     const data = await r.json();
-    const it = data[mountOf(current)];
+    const it = /\/\/music2?\.y24\.app\//.test(current) ? data[mountOf(current)] : null;
     song = it ? { url: current, title: (it.title || '').trim(), artist: (it.artist || '').trim(),
                   album: (it.album || '').trim(),
                   art: it.albumart ? `https://music.y24.app/arts/${streamCode(current)}/${it.albumart}` : null } : null;
@@ -300,10 +358,10 @@ async function play(card) {
   card.classList.add('busy');
   try {
     const session = await ensureSession();
-    const mi = new chrome.cast.media.MediaInfo(c.url, 'audio/mpeg');
+    const mi = new chrome.cast.media.MediaInfo(c.url, contentTypeFor(c.url));
     mi.streamType = chrome.cast.media.StreamType.LIVE;
     const md = new chrome.cast.media.MusicTrackMediaMetadata();
-    md.title = c.name; md.artist = 'Yiddish24';
+    md.title = c.name; md.artist = c.custom ? '' : 'Yiddish24';
     mi.metadata = md;
     mi.customData = { by: myName() };
     const req = new chrome.cast.media.LoadRequest(mi);
@@ -367,9 +425,82 @@ function makeCard(c) {
     img.onerror = () => { img.remove(); fallback(); };
     pic.prepend(img);
   } else fallback();
-  b.onclick = () => play(b);
+  if (c.custom) {
+    b.querySelector('.sub').textContent = 'מיין סטרים';
+    const del = document.createElement('span'); del.className = 'del'; del.title = 'אויסמעקן'; del.textContent = '×';
+    del.onclick = e => { e.stopPropagation(); removeCustom(c.url); };
+    pic.appendChild(del);
+  }
+  b.onclick = () => (b.dataset.url === current ? $('stop').click() : play(b));
   return b;
 }
+
+// ---- my own streams (saved in this Chrome only) ----
+const CUSTOM_KEY = 'officeMusicCustom';
+function loadCustom() { try { return JSON.parse(localStorage.getItem(CUSTOM_KEY) || '[]'); } catch (e) { return []; } }
+function saveCustom(list) {
+  try { localStorage.setItem(CUSTOM_KEY, JSON.stringify(list)); return true; }
+  catch (e) { toast('האט נישט געקענט אפהיטן (צו גרויס בילד?)'); return false; }
+}
+function contentTypeFor(url) {
+  const u = url.toLowerCase().split('?')[0];
+  if (u.endsWith('.m3u8')) return 'application/x-mpegURL';
+  if (u.endsWith('.aac')) return 'audio/aac';
+  if (u.endsWith('.ogg') || u.endsWith('.opus')) return 'audio/ogg';
+  return 'audio/mpeg';
+}
+// shrink the uploaded picture to card size so it fits in browser storage
+function shrinkImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const W = 300, H = 352, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      const s = Math.max(W / img.width, H / img.height), w = img.width * s, h = img.height * s;
+      cv.getContext('2d').drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+      URL.revokeObjectURL(img.src);
+      resolve(cv.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+let pendingIcon = null;
+function renderCustom() {
+  const sec = $('mysec'), grid = sec.querySelector('.grid');
+  grid.innerHTML = '';
+  loadCustom().forEach(c => { c.custom = true; byUrl[c.url] = c; grid.appendChild(makeCard(c)); });
+  const add = document.createElement('button'); add.className = 'card addcard';
+  add.dataset.name = ''; add.innerHTML = '<div class="pic">+</div><div class="name">צולייגן א סטרים</div><div class="sub">לייוו לינק + בילד</div>';
+  add.onclick = openAdd; grid.appendChild(add);
+  if (lastStatus) render(lastStatus);
+  applyFilter();
+}
+function removeCustom(url) {
+  const c = byUrl[url];
+  if (!confirm(`אויסמעקן "${c ? c.name : url}"?`)) return;
+  saveCustom(loadCustom().filter(x => x.url !== url)); delete byUrl[url]; renderCustom();
+}
+function openAdd() {
+  $('addform').reset(); pendingIcon = null; $('addprev').style.backgroundImage = '';
+  $('adddlg').showModal(); $('addname').focus();
+}
+$('addicon').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { pendingIcon = await shrinkImage(f); $('addprev').style.backgroundImage = `url("${pendingIcon}")`; }
+  catch (err) { pendingIcon = null; toast('דאס בילד האט נישט געארבעט'); }
+});
+$('addcancel').onclick = () => $('adddlg').close();
+$('addform').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = $('addname').value.trim(), url = $('addurl').value.trim();
+  $('adddlg').close();
+  if (!name || !/^https?:\/\//i.test(url)) return toast('נאמען און א לינק וואס הייבט אן מיט http');
+  if (byUrl[url] && !byUrl[url].custom) return toast('דער סטרים איז שוין אין דער ליסטע');
+  const list = loadCustom().filter(x => x.url !== url);
+  list.push({ name, url, image: pendingIcon });
+  if (saveCustom(list)) { renderCustom(); toast('צוגעלייגט: ' + name); }
+});
 
 $('vol').addEventListener('input', e => { dragging = true; sendVolume(e.target.value); });
 $('vol').addEventListener('change', () => { dragging = false; });
@@ -392,6 +523,11 @@ $('who').addEventListener('change', myName);
     tabs.appendChild(t);
   };
   addTab('all', 'אלעס');
+  addTab('mine', 'מיינע');
+  const my = document.createElement('section'); my.id = 'mysec'; my.dataset.group = 'mine';
+  my.innerHTML = '<h2>מיינע סטרימס</h2><div class="grid"></div>';
+  root.appendChild(my);
+  renderCustom();
   groups.forEach(g => {
     addTab(g.group, g.group);
     const sec = document.createElement('section'); sec.dataset.group = g.group;
