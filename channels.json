@@ -1,0 +1,262 @@
+[
+ {
+  "group": "קאלעקשאנס",
+  "channels": [
+   {
+    "name": "אלגעמיינע קאלעקשאן",
+    "url": "https://music.y24.app/1"
+   },
+   {
+    "name": "לעבעדיג",
+    "url": "https://music2.y24.app/37"
+   },
+   {
+    "name": "לעבעדיג 2",
+    "url": "https://music.y24.app/1055"
+   },
+   {
+    "name": "אידישע ניגונים",
+    "url": "https://music.y24.app/7"
+   },
+   {
+    "name": "קומזיץ",
+    "url": "https://music.y24.app/9"
+   },
+   {
+    "name": "רואיגע/שטייטע מוזיק",
+    "url": "https://music.y24.app/11"
+   },
+   {
+    "name": "ווארעם",
+    "url": "https://music.y24.app/1056"
+   },
+   {
+    "name": "חתונה פרייליך",
+    "url": "https://music.y24.app/8"
+   },
+   {
+    "name": "חתונה צווייטע טאנץ",
+    "url": "https://music.y24.app/10"
+   },
+   {
+    "name": "טאנץ",
+    "url": "https://music2.y24.app/55"
+   },
+   {
+    "name": "מארש",
+    "url": "https://music2.y24.app/54"
+   },
+   {
+    "name": "מארש וואלס",
+    "url": "https://music.y24.app/1057"
+   },
+   {
+    "name": "לחיים",
+    "url": "https://music2.y24.app/27"
+   },
+   {
+    "name": "נגינה אן מוזיק",
+    "url": "https://music.y24.app/3"
+   },
+   {
+    "name": "וואקאליש",
+    "url": "https://music.y24.app/1058"
+   },
+   {
+    "name": "פיאנע",
+    "url": "https://music2.y24.app/38"
+   },
+   {
+    "name": "מעדיטעשאן",
+    "url": "https://music2.y24.app/39"
+   },
+   {
+    "name": "חזנות",
+    "url": "https://music.y24.app/5"
+   },
+   {
+    "name": "קינדער קווייער",
+    "url": "https://music.y24.app/26"
+   }
+  ]
+ },
+ {
+  "group": "שבת און יום טוב",
+  "channels": [
+   {
+    "name": "שבת",
+    "url": "https://music.y24.app/2"
+   },
+   {
+    "name": "מוצאי שבת",
+    "url": "https://music.y24.app/6"
+   },
+   {
+    "name": "ימים נוראים",
+    "url": "https://music.y24.app/16"
+   },
+   {
+    "name": "סוכות",
+    "url": "https://music.y24.app/17"
+   },
+   {
+    "name": "חנוכה",
+    "url": "https://music.y24.app/4"
+   },
+   {
+    "name": "פורים",
+    "url": "https://music.y24.app/12"
+   },
+   {
+    "name": "פסח",
+    "url": "https://music.y24.app/13"
+   },
+   {
+    "name": "ל״ג בעומר",
+    "url": "https://music.y24.app/14"
+   },
+   {
+    "name": "שבועות",
+    "url": "https://music.y24.app/19"
+   }
+  ]
+ },
+ {
+  "group": "חסידות",
+  "channels": [
+   {
+    "name": "באבוב",
+    "url": "https://music2.y24.app/31"
+   },
+   {
+    "name": "בעלזא",
+    "url": "https://music2.y24.app/28"
+   },
+   {
+    "name": "וויזניץ",
+    "url": "https://music2.y24.app/29"
+   },
+   {
+    "name": "חב״ד",
+    "url": "https://music2.y24.app/40"
+   },
+   {
+    "name": "מאדזיץ",
+    "url": "https://music2.y24.app/33"
+   },
+   {
+    "name": "סאטמאר",
+    "url": "https://music2.y24.app/35"
+   },
+   {
+    "name": "סקולען",
+    "url": "https://music2.y24.app/30"
+   }
+  ]
+ },
+ {
+  "group": "זינגערס",
+  "channels": [
+   {
+    "name": "אביש בראדט",
+    "url": "https://music2.y24.app/41"
+   },
+   {
+    "name": "אברהם פריעד",
+    "url": "https://music.y24.app/21"
+   },
+   {
+    "name": "אהר'לה סאמעט",
+    "url": "https://music2.y24.app/47"
+   },
+   {
+    "name": "אייזיק האניג",
+    "url": "https://music.y24.app/25"
+   },
+   {
+    "name": "בנציון שענקער",
+    "url": "https://music2.y24.app/32"
+   },
+   {
+    "name": "בערי וועבער",
+    "url": "https://music2.y24.app/42"
+   },
+   {
+    "name": "ברוך לוין",
+    "url": "https://music2.y24.app/43"
+   },
+   {
+    "name": "דודי קאליש",
+    "url": "https://music2.y24.app/48"
+   },
+   {
+    "name": "זאנוויל וויינברגר",
+    "url": "https://music2.y24.app/53"
+   },
+   {
+    "name": "יהודה גרין",
+    "url": "https://music2.y24.app/49"
+   },
+   {
+    "name": "יואלי קליין",
+    "url": "https://music2.y24.app/56"
+   },
+   {
+    "name": "יעקב דאסקאל",
+    "url": "https://music2.y24.app/50"
+   },
+   {
+    "name": "יעקב שוואקי",
+    "url": "https://music.y24.app/1054"
+   },
+   {
+    "name": "ישראל ווערדיגער",
+    "url": "https://music2.y24.app/44"
+   },
+   {
+    "name": "לוי פאלקאוויטש",
+    "url": "https://music2.y24.app/57"
+   },
+   {
+    "name": "ליפא שמעלצער",
+    "url": "https://music.y24.app/22"
+   },
+   {
+    "name": "מאטי אילאוויטש",
+    "url": "https://music2.y24.app/34"
+   },
+   {
+    "name": "מוטי שטיינמץ",
+    "url": "https://music2.y24.app/51"
+   },
+   {
+    "name": "מיכאל שניצלער",
+    "url": "https://music.y24.app/23"
+   },
+   {
+    "name": "מרדכי בן דוד",
+    "url": "https://music.y24.app/20"
+   },
+   {
+    "name": "משה גאלדמאן",
+    "url": "https://music.y24.app/24"
+   },
+   {
+    "name": "שלומי גרטנר",
+    "url": "https://music2.y24.app/45"
+   },
+   {
+    "name": "שלומי דאסקאל",
+    "url": "https://music2.y24.app/52"
+   },
+   {
+    "name": "שמחה ליינר",
+    "url": "https://music2.y24.app/46"
+   },
+   {
+    "name": "שמילי אונגר",
+    "url": "https://music2.y24.app/58"
+   }
+  ]
+ }
+]

@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="yi" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>אפיס מוזיק</title>
+<style>
+  :root {
+    --bg: #ffffff; --soft: #f4f5f8; --ink: #212529; --muted: #6c757d; --line: #e6e8ee;
+    --blue: #2547d0; --blue-soft: #e9edfb; --player: #2b2d33; --player-ink: #f3f4f6;
+    --player-muted: #a7abb5; --stop: #e5484d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121317; --soft: #1c1e24; --ink: #eceef2; --muted: #9aa0ab; --line: #2a2d35;
+      --blue: #5b7cff; --blue-soft: #1f2747; --player: #1c1e24; --player-ink: #f3f4f6;
+      --player-muted: #9aa0ab; --stop: #f0646a;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); }
+  body { font: 15px/1.4 "Google Sans", "Segoe UI", system-ui, sans-serif; padding-bottom: 96px; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+  /* header */
+  header { border-bottom: 1px solid var(--line); background: var(--bg); position: sticky; top: 0; z-index: 10; }
+  .top { display: flex; align-items: center; gap: 16px; padding: 14px 0 10px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 22px; color: var(--blue); }
+  .brand .badge { background: var(--blue); color: #fff; border-radius: 6px; font-size: 13px;
+    padding: 3px 8px; font-weight: 600; }
+  .search { margin-inline-start: auto; position: relative; width: min(280px, 45vw); }
+  .search input { width: 100%; padding: 8px 34px 8px 12px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--soft); color: var(--ink); font: inherit; }
+  .search svg { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+  .tabs { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+  .tab { border: 0; background: none; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer;
+    padding: 7px 14px; border-radius: 6px; white-space: nowrap; }
+  .tab:hover { color: var(--ink); background: var(--soft); }
+  .tab.on { color: #fff; background: var(--blue); }
+
+  /* grid */
+  h2 { font-size: 20px; margin: 26px 0 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 18px; }
+  .card { border: 0; padding: 0; background: none; color: inherit; font: inherit; text-align: right; cursor: pointer; }
+  .pic { position: relative; aspect-ratio: 227 / 266; border-radius: 8px; overflow: hidden; background: var(--soft);
+    box-shadow: 0 1px 2px rgba(0,0,0,.06); transition: transform .15s, box-shadow .15s; }
+  .pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pic .fallback { position: absolute; inset: 0; display: grid; place-items: center; padding: 14px; text-align: center;
+    font-weight: 800; font-size: clamp(20px, 2.4vw, 30px); line-height: 1.1; color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,.35); background: var(--g); }
+  .pic .fallback::before { content: ""; position: absolute; width: 70%; aspect-ratio: 1; border-radius: 50%;
+    top: 14%; left: 15%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.35), rgba(255,255,255,.05) 60%, transparent 70%); }
+  .pic .fallback span { position: relative; }
+  .pic .mark { position: absolute; top: 8px; left: 10px; font-weight: 800; font-style: italic; font-size: 15px;
+    color: rgba(255,255,255,.85); }
+  .card:hover .pic { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.14); }
+  .play { position: absolute; left: 10px; bottom: 10px; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--blue); color: #fff; display: grid; place-items: center; opacity: 0; transform: scale(.85);
+    transition: .15s; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+  .card:hover .play { opacity: 1; transform: scale(1); }
+  .card.on .pic { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .card.on .play { opacity: 1; transform: scale(1); }
+  .live { position: absolute; top: 8px; right: 8px; background: var(--stop); color: #fff; font-size: 12px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px; display: none; }
+  .card.on .live { display: block; }
+  .card.busy .pic { opacity: .55; }
+  .name { font-weight: 700; margin-top: 8px; font-size: 15px; }
+  .sub { color: var(--muted); font-size: 13px; }
+
+  /* player bar */
+  .player { position: fixed; inset: auto 0 0 0; background: var(--player); color: var(--player-ink); z-index: 20;
+    box-shadow: 0 -4px 16px rgba(0,0,0,.18); }
+  .pl { display: flex; align-items: center; gap: 14px; min-height: 80px; padding: 8px 0; }
+  .pl .thumb { width: 60px; height: 60px; border-radius: 6px; background: #44474f center / cover no-repeat; flex: none; }
+  .pl .s.c { font-size: 12px; opacity: .85; }
+  #artist:empty { display: none; }
+  .pl .info { min-width: 0; flex: 1 1 auto; }
+  .pl .t { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pl .s { color: var(--player-muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--player-muted); margin-inline-end: 6px; }
+  .dot.on { background: #34c77b; }
+  .btn { border: 0; cursor: pointer; font: inherit; border-radius: 50%; display: grid; place-items: center; flex: none; }
+  .stopbtn { width: 44px; height: 44px; background: var(--stop); color: #fff; }
+  .stopbtn:disabled { opacity: .35; cursor: default; }
+  .vol { display: flex; align-items: center; gap: 8px; flex: 0 1 280px; direction: ltr; }
+  .vbtn { width: 32px; height: 32px; background: rgba(255,255,255,.1); color: var(--player-ink); font-size: 18px; }
+  .vbtn:hover { background: rgba(255,255,255,.18); }
+  .vol input { flex: 1; accent-color: var(--blue); min-width: 60px; }
+  .vol .n { width: 3ch; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+  @media (max-width: 600px) {
+    .pl { flex-wrap: wrap; height: auto; padding: 10px 0; gap: 10px; }
+    .vol { flex: 1 1 100%; }
+    body { padding-bottom: 140px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+  }
+
+  .who { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .who input { width: 110px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--soft); color: var(--ink); font: inherit; }
+  google-cast-launcher { width: 34px; height: 34px; flex: none; cursor: pointer;
+    --connected-color: #5b8cff; --disconnected-color: #f3f4f6; }
+  .nochrome { background: #fff4d6; color: #6b4e00; padding: 10px 16px; text-align: center; font-weight: 600; display: none; }
+  .toast { position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%); background: var(--ink); color: var(--bg);
+    padding: 9px 16px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 30; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="nochrome" id="nochrome">דער בלאט ארבעט נאר אין Google Chrome</div>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">אפיס מוזיק <span class="badge">לייוו</span></div>
+      <label class="who">דיין נאמען: <input id="who" placeholder="נאמען" autocomplete="off"></label>
+      <label class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" placeholder="זוכן…" autocomplete="off">
+      </label>
+    </div>
+    <nav class="tabs" id="tabs"></nav>
+  </div>
+</header>
+
+<main class="wrap" id="channels"></main>
+
+<div class="player">
+  <div class="wrap pl">
+    <div class="thumb" id="thumb"></div>
+    <div class="info">
+      <div class="t" id="title">פארבינדט…</div>
+      <div class="s" id="artist"></div>
+      <div class="s c"><span class="dot" id="dot"></span><span id="sub">Office speaker</span></div>
+    </div>
+    <div class="vol">
+      <button class="btn vbtn" id="down" aria-label="שטילער">−</button>
+      <input type="range" id="vol" min="0" max="100" step="1" aria-label="וואליום">
+      <button class="btn vbtn" id="up" aria-label="הויכער">+</button>
+      <span class="n" id="voln">–</span>
+    </div>
+    <google-cast-launcher title="פארבינדן צום ספיקער"></google-cast-launcher>
+    <button class="btn stopbtn" id="stop" aria-label="סטאפ" title="סטאפ">
+      <svg width="16" height="16" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2" fill="currentColor"/></svg>
+    </button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const byUrl = {};
+let current = null, dragging = false, volTimer = null, tab = 'all';
+const PLAY_ICON = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z" fill="currentColor"/></svg>';
+
+function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2600); }
+
+// ---- Chrome Cast: each person's Chrome talks to the speaker directly, no server needed ----
+let ctx = null, player = null, controller = null;
+
+function myName() {
+  const v = $('who').value.trim();
+  try { localStorage.setItem('officeMusicName', v); } catch (e) {}
+  return v || null;
+}
+
+function makeStatus() {
+  if (!player || !player.isConnected) return { app: null, url: null, by: null, volume: 0, connected: false };
+  const mi = player.mediaInfo;
+  return {
+    connected: true,
+    app: player.isMediaLoaded ? 'playing' : null,
+    url: player.isMediaLoaded && mi ? mi.contentId : null,
+    by: mi && mi.customData ? mi.customData.by || null : null,
+    volume: Math.round((player.volumeLevel || 0) * 100),
+    device: ctx.getCurrentSession() ? ctx.getCurrentSession().getCastDevice().friendlyName : null,
+  };
+}
+
+function initCast() {
+  ctx = cast.framework.CastContext.getInstance();
+  ctx.setOptions({
+    receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+    autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+  });
+  player = new cast.framework.RemotePlayer();
+  controller = new cast.framework.RemotePlayerController(player);
+  controller.addEventListener(cast.framework.RemotePlayerEventType.ANY_CHANGE, () => render(makeStatus()));
+  render(makeStatus());
+}
+
+window.__onGCastApiAvailable = ok => {
+  if (ok) initCast();
+  else { $('nochrome').style.display = 'block'; $('title').textContent = 'Cast איז נישט פאראן'; }
+};
+
+async function ensureSession() {
+  if (ctx.getCurrentSession()) return ctx.getCurrentSession();
+  await ctx.requestSession();   // Chrome shows its device list; pick "Office speaker"
+  return ctx.getCurrentSession();
+}
+
+// ---- current song (from Yiddish24's public now-playing list) ----
+let lastStatus = null, song = null, artShown = null;
+const mountOf = url => (url || '').replace(/\/+$/, '').split('/').pop();
+const streamCode = url => btoa(url.replace(/\/+$/, '')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+async function refreshSong() {
+  if (!current) { song = null; return paintBar(); }
+  try {
+    const r = await fetch('https://music.y24.app/playing.txt', { cache: 'no-store' });
+    const data = await r.json();
+    const it = data[mountOf(current)];
+    song = it ? { url: current, title: (it.title || '').trim(), artist: (it.artist || '').trim(),
+                  album: (it.album || '').trim(),
+                  art: it.albumart ? `https://music.y24.app/arts/${streamCode(current)}/${it.albumart}` : null } : null;
+  } catch (e) { song = null; }
+  paintBar();
+}
+
+function setThumb(ch) {
+  const th = $('thumb');
+  th.style.visibility = ch ? 'visible' : 'hidden';
+  if (!ch) { th.style.backgroundImage = ''; artShown = null; return; }
+  const fallback = ch.image ? `url("${ch.image}")` : gradientFor(ch.name);
+  const art = song && song.url === ch.url ? song.art : null;
+  if (!art) { th.style.backgroundImage = fallback; artShown = null; return; }
+  if (artShown === art) return;
+  const img = new Image();
+  img.onload = () => { if (img.naturalWidth > 0) { th.style.backgroundImage = `url("${art}")`; artShown = art; } else th.style.backgroundImage = fallback; };
+  img.onerror = () => { th.style.backgroundImage = fallback; };
+  if (!artShown) th.style.backgroundImage = fallback;
+  img.src = art;
+}
+
+function paintBar() {
+  const s = lastStatus; if (!s) return;
+  const ch = byUrl[s.url];
+  const sg = song && ch && song.url === ch.url && song.title ? song : null;
+  $('title').textContent = sg ? sg.title : ch ? ch.name : (s.app ? (s.title || s.app) : 'גארנישט שפילט');
+  $('artist').textContent = sg ? [sg.artist, sg.album].filter(Boolean).join(' · ') : '';
+  $('sub').textContent = ch ? [ch.name, s.by ? `אנגעהויבן דורך ${s.by}` : null].filter(Boolean).join(' · ')
+                            : !s.connected ? 'קלויבט א סטרים, אדער דריקט דעם Cast קנעפל צו פארבינדן'
+                            : (s.device ? `פארבונדן צו ${s.device}` : 'פארבונדן');
+  setThumb(ch);
+}
+
+function render(s) {
+  const changed = s.url !== current;
+  current = s.url; lastStatus = s;
+  $('dot').classList.toggle('on', !!s.connected);
+  paintBar();
+  if (changed) refreshSong();
+  $('stop').disabled = !s.app;
+  $('vol').disabled = $('down').disabled = $('up').disabled = !s.connected;
+  if (!dragging) $('vol').value = s.volume;
+  $('voln').textContent = s.volume;
+  document.querySelectorAll('.card').forEach(c => c.classList.toggle('on', c.dataset.url === current));
+}
+
+async function play(card) {
+  if (!ctx) return toast('Cast איז נאך נישט גרייט, פרובירט נאכאמאל');
+  const c = byUrl[card.dataset.url];
+  card.classList.add('busy');
+  try {
+    const session = await ensureSession();
+    const mi = new chrome.cast.media.MediaInfo(c.url, 'audio/mpeg');
+    mi.streamType = chrome.cast.media.StreamType.LIVE;
+    const md = new chrome.cast.media.MusicTrackMediaMetadata();
+    md.title = c.name; md.artist = 'Yiddish24';
+    mi.metadata = md;
+    mi.customData = { by: myName() };
+    const req = new chrome.cast.media.LoadRequest(mi);
+    req.autoplay = true;
+    await session.loadMedia(req);
+    toast('שפילט: ' + c.name);
+  } catch (e) {
+    if (e !== 'cancel' && !(e && e.code === 'cancel')) toast('האט נישט געקענט שפילן: ' + (e && (e.description || e.code) || e));
+  }
+  card.classList.remove('busy');
+  render(makeStatus());
+}
+
+function sendVolume(v) {
+  $('voln').textContent = v; clearTimeout(volTimer);
+  volTimer = setTimeout(() => {
+    if (!player || !player.isConnected) return;
+    player.volumeLevel = (+v) / 100;
+    controller.setVolumeLevel();
+  }, 150);
+}
+
+function applyFilter() {
+  const q = $('q').value.trim();
+  document.querySelectorAll('section').forEach(sec => {
+    const tabOk = tab === 'all' || sec.dataset.group === tab;
+    let any = false;
+    sec.querySelectorAll('.card').forEach(c => { const hit = tabOk && (!q || c.dataset.name.includes(q)); c.hidden = !hit; any ||= hit; });
+    sec.hidden = !any;
+  });
+}
+
+// Each channel gets its own steady color pair, picked from its name.
+const PALETTE = [
+  ['#e0457b', '#f39a4a'], ['#2547d0', '#7b3fd1'], ['#0f9b8e', '#3fc1c9'], ['#7a3fd1', '#c03fd1'],
+  ['#d1453f', '#7b1f3a'], ['#1f6fd1', '#2ac0e0'], ['#8a5a2b', '#d8a35a'], ['#3b3f8f', '#8f6bd8'],
+  ['#2e8b57', '#9acd32'], ['#c2185b', '#6a1b9a'], ['#455a64', '#90a4ae'], ['#ef6c00', '#ffb300'],
+];
+function gradientFor(name) {
+  let h = 0; for (const ch of name) h = (h * 31 + ch.codePointAt(0)) >>> 0;
+  const [a, b] = PALETTE[h % PALETTE.length];
+  return `linear-gradient(160deg, ${a}, ${b})`;
+}
+
+function makeCard(c) {
+  const b = document.createElement('button');
+  b.className = 'card'; b.dataset.url = c.url; b.dataset.name = c.name;
+  b.innerHTML = `<div class="pic"><span class="live">לייוו</span><div class="play">${PLAY_ICON}</div></div>
+                 <div class="name"></div><div class="sub">24 שעה נגינה</div>`;
+  b.querySelector('.name').textContent = c.name;
+  const pic = b.querySelector('.pic');
+  const fallback = () => {
+    const f = document.createElement('div'); f.className = 'fallback';
+    f.style.setProperty('--g', gradientFor(c.name));
+    f.innerHTML = '<span class="mark">♫</span><span></span>';
+    f.lastChild.textContent = c.name;
+    pic.prepend(f);
+  };
+  if (c.image) {
+    const img = new Image(); img.loading = 'lazy'; img.alt = c.name; img.src = c.image;
+    img.onerror = () => { img.remove(); fallback(); };
+    pic.prepend(img);
+  } else fallback();
+  b.onclick = () => play(b);
+  return b;
+}
+
+$('vol').addEventListener('input', e => { dragging = true; sendVolume(e.target.value); });
+$('vol').addEventListener('change', () => { dragging = false; });
+$('down').onclick = () => { const v = Math.max(0, +$('vol').value - 5); $('vol').value = v; sendVolume(v); };
+$('up').onclick = () => { const v = Math.min(100, +$('vol').value + 5); $('vol').value = v; sendVolume(v); };
+$('stop').onclick = () => {
+  const s = ctx && ctx.getCurrentSession();
+  if (s) { s.endSession(true); toast('אפגעשטעלט'); }   // true = stop the music on the speaker
+};
+$('q').addEventListener('input', applyFilter);
+try { $('who').value = localStorage.getItem('officeMusicName') || ''; } catch (e) {}
+$('who').addEventListener('change', myName);
+
+(async () => {
+  const groups = await (await fetch('channels.json')).json();
+  const tabs = $('tabs'), root = $('channels');
+  const addTab = (key, label) => {
+    const t = document.createElement('button'); t.className = 'tab' + (key === tab ? ' on' : ''); t.textContent = label;
+    t.onclick = () => { tab = key; tabs.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t)); applyFilter(); };
+    tabs.appendChild(t);
+  };
+  addTab('all', 'אלעס');
+  groups.forEach(g => {
+    addTab(g.group, g.group);
+    const sec = document.createElement('section'); sec.dataset.group = g.group;
+    const h = document.createElement('h2'); h.textContent = g.group; sec.appendChild(h);
+    const grid = document.createElement('div'); grid.className = 'grid';
+    g.channels.forEach(c => { byUrl[c.url] = c; grid.appendChild(makeCard(c)); });
+    sec.appendChild(grid); root.appendChild(sec);
+  });
+  if (ctx) render(makeStatus()); else render({ app: null, url: null, by: null, volume: 0, connected: false });
+  setInterval(refreshSong, 15000);
+})();
+</script>
+<script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+</body>
+</html>
