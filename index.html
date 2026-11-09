@@ -262,7 +262,7 @@ function makeStatus() {
     const s = ctx.getCurrentSession();
     const st = s && s.getApplicationStatus ? s.getApplicationStatus() : '';
     const m = /^Casting:\s*(.+)$/.exec(st || '');
-    if (m) {
+    if (m && st !== stoppedText) {   // ignore the leftover text right after we pressed Stop
       const name = m[1].trim();
       const ch = Object.values(byUrl).find(c => c.name === name);
       url = ch ? ch.url : null;
@@ -302,8 +302,20 @@ window.__onGCastApiAvailable = ok => {
   else { $('nochrome').style.display = 'block'; $('title').textContent = 'Cast איז נישט פאראן'; }
 };
 
+let stoppedText = null;      // speaker status text at the moment we pressed Stop
+let volLockUntil = 0;        // after a volume change, trust our slider for a moment
+
+function liveSession() {
+  const s = ctx && ctx.getCurrentSession();
+  if (!s) return null;
+  const st = s.getSessionState();
+  const S = cast.framework.SessionState;
+  return st === S.SESSION_STARTED || st === S.SESSION_RESUMED ? s : null;
+}
+
 async function ensureSession() {
-  if (ctx.getCurrentSession()) return ctx.getCurrentSession();
+  const s = liveSession();
+  if (s) return s;
   await ctx.requestSession();   // Chrome shows its device list; pick "Office speaker"
   return ctx.getCurrentSession();
 }
@@ -361,8 +373,10 @@ function render(s) {
   if (changed) refreshSong();
   $('stop').disabled = !s.connected;   // once connected, Stop always works
   $('vol').disabled = $('down').disabled = $('up').disabled = !s.connected;
-  if (!dragging) $('vol').value = s.volume;
-  $('voln').textContent = s.volume;
+  if (!dragging && Date.now() > volLockUntil) {   // don't let a stale speaker report undo the user's change
+    $('vol').value = s.volume;
+    $('voln').textContent = s.volume;
+  }
   document.querySelectorAll('.card').forEach(c => c.classList.toggle('on', c.dataset.url === current));
 }
 
@@ -381,6 +395,7 @@ async function play(card) {
     const req = new chrome.cast.media.LoadRequest(mi);
     req.autoplay = true;
     await session.loadMedia(req);
+    stoppedText = null;
     toast('שפילט: ' + c.name);
   } catch (e) {
     if (e !== 'cancel' && !(e && e.code === 'cancel')) toast('האט נישט געקענט שפילן: ' + (e && (e.description || e.code) || e));
@@ -390,6 +405,7 @@ async function play(card) {
 }
 
 function sendVolume(v) {
+  volLockUntil = Date.now() + 2500;
   $('voln').textContent = v; clearTimeout(volTimer);
   volTimer = setTimeout(() => {
     if (!player || !player.isConnected) return;
@@ -517,12 +533,22 @@ $('addform').addEventListener('submit', e => {
 });
 
 $('vol').addEventListener('input', e => { dragging = true; sendVolume(e.target.value); });
-$('vol').addEventListener('change', () => { dragging = false; });
+$('vol').addEventListener('change', () => { dragging = false; volLockUntil = Date.now() + 2500; });
 $('down').onclick = () => { const v = Math.max(0, +$('vol').value - 5); $('vol').value = v; sendVolume(v); };
 $('up').onclick = () => { const v = Math.min(100, +$('vol').value + 5); $('vol').value = v; sendVolume(v); };
 $('stop').onclick = () => {
-  const s = ctx && ctx.getCurrentSession();
-  if (s) { s.endSession(true); toast('אפגעשטעלט'); }   // true = stop the music on the speaker
+  const s = liveSession();
+  if (!s) return;
+  stoppedText = s.getApplicationStatus ? s.getApplicationStatus() : null;
+  if (player.isMediaLoaded) {
+    controller.stop();          // stop the music but stay connected, so the next click plays right away
+  } else {
+    s.endSession(true);         // music started elsewhere: close the player on the speaker
+  }
+  current = null;
+  lastStatus = { connected: player.isConnected, app: null, url: null, by: null, volume: +$('vol').value };
+  render(lastStatus);
+  toast('אפגעשטעלט');
 };
 $('q').addEventListener('input', applyFilter);
 try { $('who').value = localStorage.getItem('officeMusicName') || ''; } catch (e) {}
