@@ -152,6 +152,31 @@
   .ozrec { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 8px; cursor: pointer; font-size: 14px; }
   .ozrec:hover { background: var(--soft); }
   .ozrec.on, .ozhead.on { color: var(--blue); font-weight: 700; }
+  .ozbackbtn { border: 1px solid var(--line); background: var(--soft); color: var(--ink); border-radius: 8px;
+    padding: 9px 12px; font: inherit; font-weight: 600; cursor: pointer; }
+  .ozbackbtn:hover { border-color: var(--blue); color: var(--blue); }
+  .ozh { font-size: 16px; margin: 18px 0 8px; }
+  .ozchips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ozchip { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px;
+    padding: 6px 12px; font: inherit; font-size: 14px; cursor: pointer; }
+  .ozchip span { color: var(--muted); font-size: 12px; margin-inline-start: 6px; }
+  .ozchip:hover { border-color: var(--blue); color: var(--blue); }
+  .ozchip.more { color: var(--blue); font-weight: 600; }
+  .ozpage { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; background: var(--bg); }
+  .ozpage h2 { margin: 0 0 10px; font-size: 22px; }
+  .ozfacts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+  .ozfacts dt { color: var(--muted); font-size: 13px; padding-top: 2px; }
+  .ozfacts dd { margin: 0; }
+  .ozfacts a, .ozsrc { color: var(--blue); text-decoration: none; }
+  .ozfacts a:hover, .ozsrc:hover { text-decoration: underline; }
+  .ozrecs.page { padding: 0; }
+  .ozplay .ic-pause { display: none; }
+  .ozplay.small { width: 30px; height: 30px; }
+  .ozplay.small svg { width: 11px; height: 11px; }
+  .ozdur { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .ozinfo-text { white-space: pre-wrap; line-height: 1.6; max-height: 320px; overflow: auto; padding: 10px 12px;
+    background: var(--soft); border-radius: 8px; font-size: 14px; }
+  .ozsrc { display: inline-block; margin-top: 12px; font-size: 13px; }
   .ozrec .ozmeta { flex: 1; }
   .who { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
   .who input { width: 110px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
@@ -514,6 +539,10 @@ const viaRelay = u => u.startsWith(OZ_FILES) ? OZ_RELAY + u.slice(OZ_FILES.lengt
 let ozSongs = null, ozLoading = null, ozTimer = null;
 const ozNorm = s => (s || '').replace(/[֑-ׇ]/g, '').replace(/["'״׳’”`\-–,.()\/]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
 
+let ozCurrent = null, ozStack = [];          // current view + history for the back button
+const splitList = v => (v || '').split(/\s*,\s*/).map(x => x.trim()).filter(Boolean);
+const OZ_KINDS = { chatzer: 'חצרות', mechaber: 'מחברים', collection: 'קאלעקציעס' };
+
 function ozLoad() {
   if (ozSongs) return Promise.resolve(ozSongs);
   if (ozLoading) return ozLoading;
@@ -521,32 +550,95 @@ function ozLoad() {
   ozLoading = fetch(OZ_API + '/song-index').then(r => r.json()).then(d => {
     ozSongs = (d.songs || []).filter(s => s.hasRecordings).map(s => ({
       id: s.id, name: s.name || '', chatzer: s.chatzer || '', mechaber: s.mechaber || '',
+      chatzeros: splitList(s.chatzer), collections: splitList(s.collections),
       count: s.recordingCount || 0, best: s.bestRecordingRowId || null,
-      key: ozNorm([s.name, s.chatzer, s.mechaber, s.gezungen].join(' ')),
+      key: ozNorm([s.name, s.chatzer, s.mechaber, s.gezungen, s.collections].join(' ')),
     }));
-    $('ozinfo').textContent = `${ozSongs.length.toLocaleString()} ניגונים מיט רעקארדירונגען`;
+    $('ozinfo').textContent = `${ozSongs.length.toLocaleString()} ניגונים`;
     return ozSongs;
   }).catch(e => { ozLoading = null; $('ozinfo').textContent = 'האט נישט געקענט לאדן: ' + e.message; throw e; });
   return ozLoading;
 }
 
-async function ozSearch() {
-  const list = $('ozlist');
-  const q = ozNorm($('ozq').value);
+// ---- navigation ----
+function ozShow(view, push = true) {
+  if (push && ozCurrent) ozStack.push(ozCurrent);
+  ozCurrent = view;
+  ozRender();
+}
+function ozBack() { ozCurrent = ozStack.pop() || { type: 'home' }; $('ozq').value = ozCurrent.q || ''; ozRender(); }
+
+async function ozRender() {
+  $('ozback').hidden = !ozStack.length;
+  const body = $('ozbody');
   let songs;
   try { songs = await ozLoad(); } catch (e) { return; }
-  const words = q.split(' ').filter(Boolean);
-  const hits = (words.length ? songs.filter(s => words.every(w => s.key.includes(w))) : songs.slice().sort((a, b) => b.count - a.count))
-    .slice(0, 60);
-  list.innerHTML = '';
-  if (!hits.length) { list.innerHTML = '<div class="ozinfo">גארנישט געטראפן</div>'; return; }
-  hits.forEach(s => list.appendChild(ozRow(s)));
+  const v = ozCurrent || { type: 'home' };
+  body.innerHTML = '';
+  if (v.type === 'home') ozHome(body, songs);
+  else if (v.type === 'search') ozResults(body, ozFind(songs, v.q), `תוצאות פאר "${v.q}"`);
+  else if (v.type === 'list') ozResults(body, songs.filter(s => ozValues(s, v.kind).includes(v.value)), v.value, OZ_KINDS[v.kind]);
+  else if (v.type === 'cat') ozChips(body, OZ_KINDS[v.kind], v.kind, ozCounts(songs, v.kind), false);
+  else if (v.type === 'nigun') await ozNigun(body, v.song);
   if (lastStatus) render(lastStatus);
+  const top = $('ozsec').getBoundingClientRect().top;
+  if (top < 0) window.scrollBy(0, top - 130);
+}
+
+// ---- grouping by chatzer / mechaber / collection ----
+function ozValues(s, kind) { return kind === 'chatzer' ? s.chatzeros : kind === 'mechaber' ? (s.mechaber ? [s.mechaber] : []) : s.collections; }
+function ozCounts(songs, kind) {
+  const m = new Map();
+  songs.forEach(s => ozValues(s, kind).forEach(v => m.set(v, (m.get(v) || 0) + 1)));
+  return [...m.entries()].sort((a, b) => b[1] - a[1]);
+}
+function ozChips(parent, title, kind, entries, more) {
+  const h = document.createElement('h3'); h.className = 'ozh'; h.textContent = title; parent.appendChild(h);
+  const wrap = document.createElement('div'); wrap.className = 'ozchips';
+  entries.forEach(([v, n]) => {
+    const b = document.createElement('button'); b.className = 'ozchip'; b.textContent = v;
+    const c = document.createElement('span'); c.textContent = n; b.appendChild(c);
+    b.onclick = () => ozShow({ type: 'list', kind, value: v });
+    wrap.appendChild(b);
+  });
+  if (more) {
+    const b = document.createElement('button'); b.className = 'ozchip more'; b.textContent = 'אלע ←';
+    b.onclick = () => ozShow({ type: 'cat', kind });
+    wrap.appendChild(b);
+  }
+  parent.appendChild(wrap);
+}
+
+function ozHome(body, songs) {
+  ozChips(body, 'חצרות', 'chatzer', ozCounts(songs, 'chatzer').slice(0, 24), true);
+  ozChips(body, 'מחברים', 'mechaber', ozCounts(songs, 'mechaber').slice(0, 16), true);
+  ozChips(body, 'קאלעקציעס', 'collection', ozCounts(songs, 'collection').slice(0, 16), true);
+  ozResults(body, songs.slice().sort((a, b) => b.count - a.count).slice(0, 30), 'פאפולערע ניגונים');
+}
+
+function ozFind(songs, q) {
+  const words = ozNorm(q).split(' ').filter(Boolean);
+  return songs.filter(s => words.every(w => s.key.includes(w)));
+}
+
+function ozResults(body, list, title, sub) {
+  const h = document.createElement('h3'); h.className = 'ozh';
+  h.textContent = `${title}${sub ? ' · ' + sub : ''} (${list.length.toLocaleString()})`;
+  body.appendChild(h);
+  const box = document.createElement('div'); box.className = 'ozlist';
+  if (!list.length) box.innerHTML = '<div class="ozinfo">גארנישט געטראפן</div>';
+  list.slice(0, 200).forEach(s => box.appendChild(ozRow(s)));
+  if (list.length > 200) {
+    const m = document.createElement('div'); m.className = 'ozinfo';
+    m.textContent = `ווייזט 200 פון ${list.length.toLocaleString()}; זוכט צו פארענגערן`;
+    box.appendChild(m);
+  }
+  body.appendChild(box);
 }
 
 function ozRow(s) {
   const row = document.createElement('div'); row.className = 'ozrow';
-  row.innerHTML = `<div class="ozhead"><button class="ozplay" title="שפיל">${PLAY_ICON}</button>
+  row.innerHTML = `<div class="ozhead"><button class="ozplay" title="שפיל אויפן ספיקער">${PLAY_ICON}</button>
     <div class="ozmain"><div class="oztitle"></div><div class="ozmeta"></div></div><div class="ozcount"></div></div>`;
   row.querySelector('.oztitle').textContent = s.name;
   row.querySelector('.ozmeta').textContent = [s.chatzer, s.mechaber].filter(Boolean).join(' · ');
@@ -557,7 +649,7 @@ function ozRow(s) {
     const r = recs.find(x => x.rowId === s.best) || recs[0];
     if (r) playEntry(r, row);
   };
-  row.querySelector('.ozhead').onclick = () => ozToggle(row, s);  // show all recordings
+  row.querySelector('.ozhead').onclick = () => ozShow({ type: 'nigun', song: s });   // open the niggun page
   return row;
 }
 
@@ -567,31 +659,75 @@ async function ozRecordings(s) {
   s.recs = (d.recordings || []).filter(r => r.url).map(r => {
     const who = [r.personalities, r.album].filter(Boolean).join(' · ');
     const c = { url: viaRelay(r.url), name: s.name, artist: who || (r.name || '').replace(/\.mp3$/i, ''),
-                custom: 'oitzer', image: null, rowId: r.rowId, rating: r.rating || 0 };
+                custom: 'oitzer', image: null, rowId: r.rowId, rating: r.rating || 0, dur: r.dur || 0,
+                credits: r.producerName || r.credits || '' };
     byUrl[c.url] = c;
     return c;
   });
   return s.recs;
 }
 
-async function ozToggle(row, s) {
-  const open = row.querySelector('.ozrecs');
-  if (open) { open.remove(); return; }
-  const box = document.createElement('div'); box.className = 'ozrecs'; box.textContent = 'לאדט…';
-  row.appendChild(box);
-  try {
-    const recs = await ozRecordings(s);
-    box.innerHTML = '';
-    recs.forEach((r, i) => {
-      const el = document.createElement('div'); el.className = 'ozrec'; el.dataset.url = r.url;
-      el.innerHTML = `<span>▶</span><span class="ozmeta"></span>`;
-      el.querySelector('.ozmeta').textContent = r.artist || `רעקארדינג ${i + 1}`;
-      el.onclick = () => playEntry(r, el);
-      box.appendChild(el);
-    });
-    if (!recs.length) box.textContent = 'קיין רעקארדירונגען';
-    if (lastStatus) render(lastStatus);
-  } catch (e) { box.textContent = 'האט נישט געקענט לאדן'; }
+// ---- one niggun, like the site's niggun page ----
+async function ozNigun(body, s) {
+  body.innerHTML = '<div class="ozinfo">לאדט…</div>';
+  let d = {};
+  try { d = await (await fetch(`${OZ_API}/song-detail/${s.id}`)).json(); } catch (e) {}
+  let recs = [];
+  try { recs = await ozRecordings(s); } catch (e) {}
+  body.innerHTML = '';
+  const page = document.createElement('div'); page.className = 'ozpage';
+
+  const t = document.createElement('h2'); t.textContent = d.name || s.name; page.appendChild(t);
+
+  const facts = [
+    ['מחבר', d.mechaber || s.mechaber, 'mechaber'],
+    ['חצר', d.chatzer || s.chatzer, 'chatzer'],
+    ['סקאלע', d.scale], ['ריטעם', d.ritem],
+    ['ווערט געזונגען', d.gezungen],
+    ['פערזענליכקייטן', d.personalities],
+    ['אלבומען', d.albums],
+    ['קאלעקציעס', d.collections, 'collection'],
+  ];
+  const dl = document.createElement('dl'); dl.className = 'ozfacts';
+  facts.filter(f => f[1]).forEach(([k, v, kind]) => {
+    const dt = document.createElement('dt'); dt.textContent = k;
+    const dd = document.createElement('dd');
+    if (kind) {
+      splitList(v).forEach((x, i) => {
+        if (i) dd.append(', ');
+        const a = document.createElement('a'); a.href = '#'; a.textContent = x;
+        a.onclick = e => { e.preventDefault(); ozShow({ type: 'list', kind, value: x }); };
+        dd.appendChild(a);
+      });
+    } else dd.textContent = v;
+    dl.append(dt, dd);
+  });
+  page.appendChild(dl);
+
+  const h = document.createElement('h3'); h.className = 'ozh'; h.textContent = `רעקארדירונגען (${recs.length})`;
+  page.appendChild(h);
+  const box = document.createElement('div'); box.className = 'ozrecs page';
+  recs.forEach((r, i) => {
+    const el = document.createElement('div'); el.className = 'ozrec'; el.dataset.url = r.url;
+    el.innerHTML = `<button class="ozplay small" title="שפיל אויפן ספיקער">${PLAY_ICON}</button><span class="ozmeta"></span><span class="ozdur"></span>`;
+    el.querySelector('.ozmeta').textContent = r.artist || `רעקארדינג ${i + 1}`;
+    el.querySelector('.ozdur').textContent = r.dur ? `${Math.floor(r.dur / 60)}:${String(r.dur % 60).padStart(2, '0')}` : '';
+    el.onclick = () => playEntry(r, el);
+    box.appendChild(el);
+  });
+  if (!recs.length) box.textContent = 'קיין רעקארדירונגען';
+  page.appendChild(box);
+
+  if (d.info) {
+    const hi = document.createElement('h3'); hi.className = 'ozh'; hi.textContent = 'אינפארמאציע';
+    const p = document.createElement('div'); p.className = 'ozinfo-text'; p.textContent = d.info;
+    page.append(hi, p);
+  }
+  const link = document.createElement('a'); link.className = 'ozsrc';
+  link.href = `https://oitzerhanigunim.org/nigunim/${s.id}`; link.target = '_blank'; link.rel = 'noopener';
+  link.textContent = 'עפן אויף oitzerhanigunim.org ↗';
+  page.appendChild(link);
+  body.appendChild(page);
 }
 
 // ---- my own streams (saved in this Chrome only) ----
@@ -694,7 +830,7 @@ $('who').addEventListener('change', myName);
     const t = document.createElement('button'); t.className = 'tab' + (key === tab ? ' on' : ''); t.textContent = label;
     t.onclick = () => {
       tab = key; tabs.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t)); applyFilter();
-      if (key === 'oitzer') { ozSearch(); setTimeout(() => $('ozq').focus(), 50); }
+      if (key === 'oitzer') { if (!ozCurrent) ozShow({ type: 'home' }, false); else ozRender(); }
     };
     tabs.appendChild(t);
   };
@@ -703,12 +839,23 @@ $('who').addEventListener('change', myName);
   addTab('oitzer', 'אוצר הניגונים');
   const oz = document.createElement('section'); oz.id = 'ozsec'; oz.dataset.group = 'oitzer'; oz.hidden = true;
   oz.innerHTML = `<h2>אוצר הניגונים</h2>
-    <div class="ozbar"><input id="ozq" placeholder="זוכט א ניגון, חצר אדער מחבר…" autocomplete="off">
+    <div class="ozbar"><button class="ozbackbtn" id="ozback" hidden>→ צוריק</button>
+    <input id="ozq" placeholder="זוכט א ניגון, חצר אדער מחבר…" autocomplete="off">
+    <button class="ozbackbtn" id="ozhome" title="היים">⌂</button>
     <span class="ozinfo" id="ozinfo"></span></div>
-    <div class="ozlist" id="ozlist"></div>
-    <div class="ozinfo" style="margin-top:10px">פון <a href="https://oitzerhanigunim.org/" target="_blank" rel="noopener">oitzerhanigunim.org</a></div>`;
+    <div id="ozbody"></div>
+    <div class="ozinfo" style="margin-top:14px">אינפארמאציע און רעקארדירונגען פון <a href="https://oitzerhanigunim.org/" target="_blank" rel="noopener">oitzerhanigunim.org</a></div>`;
   root.appendChild(oz);
-  $('ozq').addEventListener('input', () => { clearTimeout(ozTimer); ozTimer = setTimeout(ozSearch, 250); });
+  $('ozq').addEventListener('input', () => {
+    clearTimeout(ozTimer);
+    ozTimer = setTimeout(() => {
+      const q = $('ozq').value.trim();
+      if (!q) ozShow({ type: 'home' }, false);
+      else ozShow({ type: 'search', q }, !(ozCurrent && ozCurrent.type === 'search'));
+    }, 250);
+  });
+  $('ozback').onclick = ozBack;
+  $('ozhome').onclick = () => { $('ozq').value = ''; ozStack = []; ozShow({ type: 'home' }, false); };
   const my = document.createElement('section'); my.id = 'mysec'; my.dataset.group = 'mine';
   my.innerHTML = '<h2>מיינע סטרימס</h2><div class="grid"></div>';
   root.appendChild(my);
